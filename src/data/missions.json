@@ -1,0 +1,32 @@
+{
+  "missions": [
+    {
+      "id": "rabbit-stable",
+      "title": "토끼 마을 지키기",
+      "description": "토끼 50마리 이상을 60초 동안 유지하세요. 여우가 너무 많으면 사냥꾼 카드를, 풀이 부족하면 번식 슬라이더를 조절해 보세요.",
+      "species": "rabbits",
+      "min": 50,
+      "sustainSec": 60,
+      "hint": "여우·풀 균형이 핵심입니다"
+    },
+    {
+      "id": "fox-balance",
+      "title": "여우와 공존하기",
+      "description": "여우 5~20마리 사이를 45초 동안 유지하세요. 포식-피식자 순환 그래프가 어떻게 흔들리는지 관찰해 보세요.",
+      "species": "foxes",
+      "min": 5,
+      "max": 20,
+      "sustainSec": 45,
+      "hint": "개체수 그래프의 파도를 보세요"
+    },
+    {
+      "id": "meadow",
+      "title": "초원 가꾸기",
+      "description": "풀 200포기 이상을 30초 동안 유지하세요. 토끼가 너무 많으면 풀이 먼저 사라집니다.",
+      "species": "grass",
+      "min": 200,
+      "sustainSec": 30,
+      "hint": "토끼 수를 먼저 확인하세요"
+    }
+  ]
+}
