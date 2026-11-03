@@ -96,7 +96,11 @@ export class EcoStage {
     });
 
     this.root.querySelector('[data-act="toggle"]')?.addEventListener('click', () => {
-      this.store.set({ running: !this.store.get().running });
+      const wasRunning = this.store.get().running;
+      if (!wasRunning && this.store.get().notice.startsWith('시작 버튼을')) {
+        this.store.set({ notice: '생태계가 살아 움직입니다. 그래프의 파도를 관찰해 보세요.' });
+      }
+      this.store.set({ running: !wasRunning });
     });
     this.root.querySelector('[data-act="reset"]')?.addEventListener('click', () => {
       this.rng = mulberry32(this.store.get().seed ^ 0x9e3779b9);

@@ -53,7 +53,7 @@ export class MazeView {
           <canvas class="maze-canvas" aria-label="미로 탐색 캔버스"></canvas>
           <div class="maze-stats stats" data-out="stats" role="status" aria-live="polite"></div>
         </div>
-        <p class="hint" data-out="share"></p>
+        <p class="hint" data-out="share-hint"></p>
       </section>
     `;
     this.canvas = this.root.querySelector('.maze-canvas');
@@ -78,10 +78,10 @@ export class MazeView {
       const url = shareUrl(this.store.get().seed, 'maze');
       try {
         await navigator.clipboard.writeText(url);
-        const hint = this.root.querySelector('[data-out="share"]');
+        const hint = this.root.querySelector('[data-out="share-hint"]');
         if (hint) hint.textContent = `공유 주소 복사됨: ${url}`;
       } catch {
-        const hint = this.root.querySelector('[data-out="share"]');
+        const hint = this.root.querySelector('[data-out="share-hint"]');
         if (hint) hint.textContent = `공유 주소: ${url}`;
       }
     });
@@ -135,10 +135,17 @@ export class MazeView {
     if (toggle) toggle.textContent = s.playing ? '일시정지' : '탐색 시작하기';
     const stats = this.root.querySelector('[data-out="stats"]');
     if (stats) {
+      const complete = s.progress >= s.result.steps.length;
+      const visitText = complete
+        ? `<span>방문</span><strong>${s.result.visitedCount}칸</strong>`
+        : `<span>방문</span><strong>${Math.min(s.progress, s.result.visitedCount)}칸 탐색 중…</strong>`;
+      const pathText = complete
+        ? `<span>최종 경로</span><strong>${s.result.found ? `${s.result.pathLength}칸` : '없음'}</strong>`
+        : `<span>최종 경로</span><strong>탐색 후 공개</strong>`;
       stats.innerHTML = `
         <div class="stat-row"><strong>${PATH_NAMES[s.algo]}</strong></div>
-        <div class="stat-row"><span>방문</span><strong>${Math.min(s.progress, s.result.visitedCount)} / ${s.result.visitedCount}칸</strong></div>
-        <div class="stat-row"><span>최종 경로</span><strong>${s.result.found ? `${s.result.pathLength}칸` : '없음'}</strong></div>
+        <div class="stat-row">${visitText}</div>
+        <div class="stat-row">${pathText}</div>
         <div class="stat-row"><span>미로 시드</span><strong>#${s.seed}</strong></div>
         <p class="legend"><span class="sw" style="background:${C.visited}"></span>방문 <span class="sw" style="background:${C.frontier}"></span>경계 <span class="sw" style="background:${C.path}"></span>최종 경로</p>
       `;

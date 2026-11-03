@@ -30,6 +30,7 @@ interface ActiveView {
 export class App {
   private mode: Mode;
   private seed: number;
+  private shareKey = '';
   private view: ActiveView | null = null;
   private stage: HTMLElement | null = null;
 
@@ -68,12 +69,17 @@ export class App {
           <h2>이 화면에서 배워요</h2>
           <p data-out="guide"></p>
           <h2>공유하기</h2>
-          <p><small>지금 장면의 시드 번호는 <strong>#${this.seed}</strong> 입니다. 주소창의 <code>?seed=${this.seed}&amp;mode=${this.mode}</code>를 친구에게 보내면 똑같은 미로·배열·초원이 열립니다.</small></p>
+          <p data-out="share"></p>
         </aside>
       </main>
       <footer class="footer"><small>정보(정렬·탐색) + 과학(먹이사슬·생태계) · 초6~중3 · 결정적 시드 RNG</small></footer>
     `;
     this.stage = this.root.querySelector('[data-out="stage"]');
+    // Keep the share panel truthful: seeds change on shuffle / new maze.
+    this.race.subscribe(() => this.updateShare());
+    this.maze.subscribe(() => this.updateShare());
+    this.eco.subscribe(() => this.updateShare());
+    this.updateShare();
     this.root.querySelectorAll<HTMLButtonElement>('[data-mode]').forEach((btn) => {
       btn.addEventListener('click', () => this.switch(btn.dataset.mode as Mode));
       btn.addEventListener('keydown', (e) => {
@@ -108,10 +114,45 @@ export class App {
     const guide = this.root.querySelector('[data-out="guide"]');
     if (guide) guide.textContent = this.guideText(mode);
     this.mountView();
+    this.updateShare();
   }
 
-  private guideText(mode: Mode): string {
-    switch (mode) {
+  /** Current scenario seed follows the active mode's store. */
+  private activeSeed(): number {
+    switch (this.mode) {
+      case 'sort':
+        return this.race.get().seed;
+      case 'maze':
+        return this.maze.get().seed;
+      case 'eco':
+        return this.eco.get().seed;
+    }
+  }
+
+  private updateShare(): void {
+    const el = this.root.querySelector('aside [data-out="share"]');
+    if (!el) return;
+    const seed = this.activeSeed();
+    const key = `${this.mode}:${seed}`;
+    if (key === this.shareKey) return;
+    this.shareKey = key;
+    el.innerHTML = '';
+    const small = document.createElement('small');
+    const a = document.createElement('span');
+    a.textContent = '지금 장면의 시드 번호는 ';
+    const strong = document.createElement('strong');
+    strong.textContent = `#${seed}`;
+    const b = document.createElement('span');
+    b.textContent = ' 입니다. 주소창의 ';
+    const code = document.createElement('code');
+    code.textContent = `?seed=${seed}&mode=${this.mode}`;
+    const c = document.createElement('span');
+    c.textContent = '를 친구에게 보내면 똑같은 미로·배열·초원이 열립니다.';
+    small.append(a, strong, b, code, c);
+    el.appendChild(small);
+  }
+
+  private guideText(mode: Mode): string {    switch (mode) {
       case 'sort':
         return '같은 배열을 세 정렬이 나눠 달립니다. 막대 색이 빨갛게 빛나면 비교·교환이 일어난 자리, 아래 코드 줄이 함께 빛나며 무엇을 하는지 알려줍니다. 누가 단계가 가장 적을까요?';
       case 'maze':
