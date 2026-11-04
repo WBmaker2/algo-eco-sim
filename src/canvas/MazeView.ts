@@ -25,6 +25,8 @@ export class MazeView {
   private acc = 0;
   private unsub: (() => void) | null = null;
   private canvas: HTMLCanvasElement | null = null;
+  private statsKey = '';
+  private lastCssH = -1;
   private destroyed = false;
 
   constructor(
@@ -139,22 +141,28 @@ export class MazeView {
     if (speedOut) speedOut.textContent = `${s.speed}칸/초`;
     const toggle = this.root.querySelector<HTMLButtonElement>('[data-act="toggle"]');
     if (toggle) toggle.textContent = s.playing ? '일시정지' : '탐색 시작하기';
-    const stats = this.root.querySelector('[data-out="stats"]');
-    if (stats) {
-      const complete = s.progress >= s.result.steps.length;
-      const visitText = complete
-        ? `<span>방문</span><strong>${s.result.visitedCount}칸</strong>`
-        : `<span>방문</span><strong>${Math.min(s.progress, s.result.visitedCount)}칸 탐색 중…</strong>`;
-      const pathText = complete
-        ? `<span>최종 경로</span><strong>${s.result.found ? `${s.result.pathLength}칸` : '없음'}</strong>`
-        : `<span>최종 경로</span><strong>탐색 후 공개</strong>`;
-      stats.innerHTML = `
+    // Rebuild stats only when something actually changed — rewriting innerHTML
+    // at 60fps churns layout and spams the aria-live region for no benefit.
+    const key = `${s.algo}:${s.progress}:${s.seed}:${s.result.steps.length}`;
+    if (key !== this.statsKey) {
+      this.statsKey = key;
+      const stats = this.root.querySelector('[data-out="stats"]');
+      if (stats) {
+        const complete = s.progress >= s.result.steps.length;
+        const visitText = complete
+          ? `<span>방문</span><strong>${s.result.visitedCount}칸</strong>`
+          : `<span>방문</span><strong>${Math.min(s.progress, s.result.visitedCount)}칸 탐색 중…</strong>`;
+        const pathText = complete
+          ? `<span>최종 경로</span><strong>${s.result.found ? `${s.result.pathLength}칸` : '없음'}</strong>`
+          : `<span>최종 경로</span><strong>탐색 후 공개</strong>`;
+        stats.innerHTML = `
         <div class="stat-row"><strong>${PATH_NAMES[s.algo]}</strong></div>
         <div class="stat-row">${visitText}</div>
         <div class="stat-row">${pathText}</div>
         <div class="stat-row"><span>미로 시드</span><strong>#${s.seed}</strong></div>
         <p class="legend"><span class="sw" style="background:${C.visited}"></span>방문 <span class="sw" style="background:${C.frontier}"></span>경계 <span class="sw" style="background:${C.path}"></span>최종 경로</p>
       `;
+      }
     }
     this.draw(s);
   }
@@ -167,7 +175,12 @@ export class MazeView {
     const cssW = canvas.clientWidth || 560;
     const cell = Math.max(2, Math.floor(cssW / cols));
     const cssH = cell * rows;
-    canvas.style.height = `${cssH}px`;
+    // Write the height only when it actually changes — rewriting layout from a
+    // layout reading every frame is what lets a scrollbar feedback loop spin.
+    if (cssH !== this.lastCssH) {
+      this.lastCssH = cssH;
+      canvas.style.height = `${cssH}px`;
+    }
     if (canvas.width !== Math.round(cssW * dpr) || canvas.height !== Math.round(cssH * dpr)) {
       canvas.width = Math.round(cssW * dpr);
       canvas.height = Math.round(cssH * dpr);

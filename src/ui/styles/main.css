@@ -1,5 +1,9 @@
 :root { color-scheme: dark; }
 * { box-sizing: border-box; }
+/* Keep layout width stable whether the vertical scrollbar is shown or not —
+   otherwise the maze canvas (height derived from width) and the scrollbar
+   chase each other every frame and the whole page flickers. */
+html { scrollbar-gutter: stable; }
 body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; background: #07120e; color: #e9f4ec; }
 .skip-link { position: absolute; left: -9999px; }
 .skip-link:focus { left: 8px; top: 8px; background: #ffd166; color: #111; padding: 8px 12px; z-index: 200; }
@@ -24,7 +28,10 @@ body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Goth
 .panel code { color: #ffd166; }
 .footer { padding: 12px 16px; color: #93b8a4; }
 .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 10px; }
-.controls button { padding: 8px 14px; border-radius: 10px; border: 1px solid #2b4a3d; background: #0f2a20; color: #e9f4ec; cursor: pointer; font-weight: 600; touch-action: manipulation; }
+.controls button { padding: 8px 14px; border-radius: 10px; border: 1px solid #2b4a3d; background: #0f2a20; color: #e9f4ec; cursor: pointer; font-weight: 600; touch-action: manipulation; white-space: nowrap; }
+/* Play/pause label swaps (e.g. 탐색 시작하기 ↔ 일시정지) must not reflow the
+   control row — a wrapping row changes page height and blinks the scrollbar. */
+.controls [data-act='toggle'] { min-width: 8em; }
 .controls select, .controls input[type='range'] { accent-color: #ffd166; }
 .controls label { display: inline-flex; gap: 6px; align-items: center; font-size: 13px; color: #cfe3d6; }
 .btn-pulse { position: relative; padding: 10px 16px; border-radius: 10px; border: 0 !important; font-weight: 700; cursor: pointer; background: #ffd166 !important; color: #231a02 !important; }
