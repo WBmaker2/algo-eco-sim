@@ -17,6 +17,7 @@ import {
 import type { Store } from '../stores/store';
 import { renderEvents } from '../ui/Events';
 import { renderPopChart } from '../ui/PopChart';
+import { guardToggle } from '../ui/toggleGuard';
 
 const TICK_HZ = 10;
 
@@ -79,6 +80,7 @@ export class EcoStage {
     `;
     this.canvas = this.root.querySelector('.eco-canvas');
     this.chart = this.root.querySelector('.eco-chart');
+    const canToggle = guardToggle();
 
     const missionSel = this.root.querySelector<HTMLSelectElement>('[data-ctl="mission"]');
     if (missionSel) missionSel.value = s.mission.missionId;
@@ -96,6 +98,7 @@ export class EcoStage {
     });
 
     this.root.querySelector('[data-act="toggle"]')?.addEventListener('click', () => {
+      if (!canToggle()) return;
       const wasRunning = this.store.get().running;
       if (!wasRunning && this.store.get().notice.startsWith('시작 버튼을')) {
         this.store.set({ notice: '생태계가 살아 움직입니다. 그래프의 파도를 관찰해 보세요.' });
@@ -132,11 +135,14 @@ export class EcoStage {
     this.last = performance.now();
     const loop = (t: number): void => {
       if (this.destroyed) return;
-      const dt = Math.min(0.1, (t - this.last) / 1000);
-      this.last = t;
-      this.update(dt);
-      this.render();
-      this.raf = requestAnimationFrame(loop);
+      try {
+        const dt = Math.min(0.1, (t - this.last) / 1000);
+        this.last = t;
+        this.update(dt);
+        this.render();
+      } finally {
+        if (!this.destroyed) this.raf = requestAnimationFrame(loop);
+      }
     };
     this.raf = requestAnimationFrame(loop);
     this.render();

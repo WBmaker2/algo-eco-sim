@@ -7,7 +7,7 @@ body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Goth
 .topbar h1 { margin: 0; font-size: 20px; }
 .topbar .sub { font-size: 13px; color: #93b8a4; font-weight: 400; }
 .tabs { display: flex; gap: 8px; }
-.tabs [role='tab'] { display: grid; gap: 2px; padding: 8px 14px; border-radius: 10px; border: 1px solid #1d3a2f; background: #0a1a14; color: #e9f4ec; cursor: pointer; font-weight: 700; font-size: 14px; }
+.tabs [role='tab'] { display: grid; gap: 2px; padding: 8px 14px; border-radius: 10px; border: 1px solid #1d3a2f; background: #0a1a14; color: #e9f4ec; cursor: pointer; font-weight: 700; font-size: 14px; touch-action: manipulation; }
 .tabs [role='tab'] small { font-weight: 400; font-size: 11px; color: #93b8a4; }
 .tabs [role='tab'][aria-selected='true'] { background: #ffd166; color: #231a02; border-color: #ffd166; }
 .tabs [role='tab'][aria-selected='true'] small { color: #5b4a12; }
@@ -24,7 +24,7 @@ body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Goth
 .panel code { color: #ffd166; }
 .footer { padding: 12px 16px; color: #93b8a4; }
 .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 10px; }
-.controls button { padding: 8px 14px; border-radius: 10px; border: 1px solid #2b4a3d; background: #0f2a20; color: #e9f4ec; cursor: pointer; font-weight: 600; }
+.controls button { padding: 8px 14px; border-radius: 10px; border: 1px solid #2b4a3d; background: #0f2a20; color: #e9f4ec; cursor: pointer; font-weight: 600; touch-action: manipulation; }
 .controls select, .controls input[type='range'] { accent-color: #ffd166; }
 .controls label { display: inline-flex; gap: 6px; align-items: center; font-size: 13px; color: #cfe3d6; }
 .btn-pulse { position: relative; padding: 10px 16px; border-radius: 10px; border: 0 !important; font-weight: 700; cursor: pointer; background: #ffd166 !important; color: #231a02 !important; }
@@ -53,7 +53,7 @@ body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Goth
 .sliders { display: grid; gap: 8px; margin-top: 8px; }
 .slider { display: grid; gap: 4px; font-size: 13px; color: #cfe3d6; }
 .events { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
-.event-card { display: grid; gap: 4px; justify-items: center; padding: 12px 8px; border-radius: 12px; border: 1px solid #2b4a3d; background: #0f2a20; color: #e9f4ec; cursor: pointer; }
+.event-card { display: grid; gap: 4px; justify-items: center; padding: 12px 8px; border-radius: 12px; border: 1px solid #2b4a3d; background: #0f2a20; color: #e9f4ec; cursor: pointer; touch-action: manipulation; }
 .event-card:hover { border-color: #ffd166; }
 .event-icon { font-size: 24px; }
 .event-title { font-weight: 700; }

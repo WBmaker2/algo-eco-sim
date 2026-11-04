@@ -7,6 +7,7 @@ import { SORT_ALGOS, SORT_NAMES, type SortAlgoId } from '../algo/sortSteps';
 import { reshuffleRace, resetRace, type RaceState } from '../stores/raceStore';
 import type { Store } from '../stores/store';
 import { renderCodePane } from '../ui/CodePane';
+import { guardToggle } from '../ui/toggleGuard';
 
 const LANE_COLORS: Record<SortAlgoId, string> = {
   bubble: '#4ade80',
@@ -61,8 +62,10 @@ export class SortView {
     this.canvas = this.root.querySelector('.sort-canvas');
     this.codeEl = this.root.querySelector('[data-out="code"]');
     this.statsEl = this.root.querySelector('[data-out="stats"]');
+    const canToggle = guardToggle();
 
     this.root.querySelector('[data-act="toggle"]')?.addEventListener('click', () => {
+      if (!canToggle()) return;
       const cur = this.store.get();
       const allDone = SORT_ALGOS.every(
         (a) => cur.positions[a] >= cur.results[a].steps.length - 1,
@@ -94,11 +97,14 @@ export class SortView {
     this.last = performance.now();
     const loop = (t: number): void => {
       if (this.destroyed) return;
-      const dt = Math.min(0.1, (t - this.last) / 1000);
-      this.last = t;
-      this.advance(dt);
-      this.render();
-      this.raf = requestAnimationFrame(loop);
+      try {
+        const dt = Math.min(0.1, (t - this.last) / 1000);
+        this.last = t;
+        this.advance(dt);
+        this.render();
+      } finally {
+        if (!this.destroyed) this.raf = requestAnimationFrame(loop);
+      }
     };
     this.raf = requestAnimationFrame(loop);
     this.render();

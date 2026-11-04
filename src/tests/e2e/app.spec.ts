@@ -43,3 +43,24 @@ test('seed in URL is shown as shareable scenario', async ({ page }) => {
   await page.goto('/?seed=12345&mode=sort');
   await expect(page.getByText(/#12345/)).toBeVisible();
 });
+
+test('double-click on race start still starts the race', async ({ page }) => {
+  await page.goto('/?seed=20260501&mode=sort');
+  await page.getByRole('button', { name: '경주 시작하기' }).dblclick();
+  await page.waitForTimeout(1200);
+  // second tap must be ignored — race runs instead of start-then-instant-pause
+  await expect(page.getByRole('button', { name: '일시정지' })).toBeVisible();
+  const text = await page.locator('.stat-row').first().textContent();
+  const m = /단계\s*([\d,]+)\s*\//.exec(text ?? '');
+  expect(m, 'race must have advanced past step 1').not.toBeNull();
+  expect(Number((m?.[1] ?? '1').replace(/,/g, ''))).toBeGreaterThan(1);
+});
+
+test('double-click on eco wake still runs the simulation', async ({ page }) => {
+  await page.goto('/?seed=20260501&mode=eco');
+  await page.getByRole('tab', { name: /생태계/ }).click();
+  await page.getByRole('button', { name: '생태계 깨우기' }).dblclick();
+  await page.waitForTimeout(1500);
+  await expect(page.getByRole('button', { name: '일시정지' })).toBeVisible();
+  await expect(page.getByText(/살아 움직입니다/)).toBeVisible();
+});

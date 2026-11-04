@@ -7,6 +7,7 @@ import { PATH_NAMES, type PathAlgoId } from '../algo/pathSteps';
 import { shareUrl } from '../eco/rng';
 import { newMaze, setMazeAlgo, type MazeState } from '../stores/mazeStore';
 import type { Store } from '../stores/store';
+import { guardToggle } from '../ui/toggleGuard';
 
 const C = {
   wall: '#0b1a14',
@@ -57,12 +58,14 @@ export class MazeView {
       </section>
     `;
     this.canvas = this.root.querySelector('.maze-canvas');
+    const canToggle = guardToggle();
     const algoSel = this.root.querySelector<HTMLSelectElement>('[data-ctl="algo"]');
     if (algoSel) algoSel.value = s.algo;
     algoSel?.addEventListener('change', () => {
       setMazeAlgo(this.store, algoSel.value as PathAlgoId);
     });
     this.root.querySelector('[data-act="toggle"]')?.addEventListener('click', () => {
+      if (!canToggle()) return;
       const cur = this.store.get();
       if (cur.progress >= cur.result.steps.length) this.store.set({ progress: 0 });
       this.store.set({ playing: !this.store.get().playing });
@@ -94,23 +97,26 @@ export class MazeView {
     this.last = performance.now();
     const loop = (t: number): void => {
       if (this.destroyed) return;
-      const dt = Math.min(0.1, (t - this.last) / 1000);
-      this.last = t;
-      const st = this.store.get();
-      if (st.playing) {
-        this.acc += dt * st.speed;
-        const jump = Math.floor(this.acc);
-        if (jump > 0) {
-          this.acc -= jump;
-          const next = Math.min(st.result.steps.length, st.progress + jump);
-          this.store.set({
-            progress: next,
-            playing: next < st.result.steps.length,
-          });
+      try {
+        const dt = Math.min(0.1, (t - this.last) / 1000);
+        this.last = t;
+        const st = this.store.get();
+        if (st.playing) {
+          this.acc += dt * st.speed;
+          const jump = Math.floor(this.acc);
+          if (jump > 0) {
+            this.acc -= jump;
+            const next = Math.min(st.result.steps.length, st.progress + jump);
+            this.store.set({
+              progress: next,
+              playing: next < st.result.steps.length,
+            });
+          }
         }
+        this.render();
+      } finally {
+        if (!this.destroyed) this.raf = requestAnimationFrame(loop);
       }
-      this.render();
-      this.raf = requestAnimationFrame(loop);
     };
     this.raf = requestAnimationFrame(loop);
     this.render();
